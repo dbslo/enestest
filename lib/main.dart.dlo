@@ -1,0 +1,493 @@
+// images are provided by flutter.dev 
+// 1/31/2022 dlo 
+// try to understand all parts of code first , then run the test in AS  
+// multi -line,  in imageProvider function call, long string, var s = '''a next line,     b next line,    c''';
+// MaterialApp - widget that introduces many interesting tools such as Navigator or Theme to help you develop your app. 
+// he runApp() function takes the given Widget and makes it the root of the widget tree. ... A widget's main job is to implement a build() function, which describes the widget in terms of other, lower-level widgets.
+// build - build method Null safety
+// Describes the part of the user interface represented by this widget. The framework calls this method when this widget is inserted into the tree in a given BuildContext and when the dependencies of this widget chang
+/* 
+home =  The widget for the default route of the app, where app starts unless initialRoute is specified
+<a href="https://api.flutter.dev/flutter/material/MaterialApp-class.html">flutter.dev</a> on MaterialApp - home, Routes...
+
+Asset image <a href="https://www.geeksforgeeks.org/how-to-add-images-in-flutter-app/">geekforgeeks.org</a> very good info on
+gettting image from app folder , app/assets/images/1b.jpg,   pubspec.yaml/flutter: assets: - assets/images,   dart/Image.asset('asset/images/1b.jpg'),
+*/
+// ************* original codes below
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(
+    const MaterialApp( 
+      home: ExampleDragAndDrop(),
+      debugShowCheckedModeBanner: false,  // turn off debug and its banner
+    ),
+  );
+}
+// const mjList _mjTiles = [mjTile ( name: '1b', mjId: '1b'), mjTile []....   ]  // Id is probably not needed, it is part of file name
+// e.g. mjImage = Image.asset('asset/images/1b.jpg')
+// actual sample code <a href="https://www.geeksforgeeks.org/how-to-add-images-in-flutter-app/">geeksforgeesks.org</a>
+
+//  imageProvider uses the global imageCache to cache images.
+const List<Item> _items = [
+  Item(
+    name: 'Spinach Pizza',
+    totalPriceCents: 1299,
+    uid: '1',
+    imageProvider: NetworkImage('https://flutter'  
+        '.dev/docs/cookbook/img-files/effects/split-check/Food1.jpg'),
+  ),
+  Item(
+    name: 'Veggie Delight',
+    totalPriceCents: 799,
+    uid: '2',
+    imageProvider: NetworkImage('https://flutter'
+        '.dev/docs/cookbook/img-files/effects/split-check/Food2.jpg'),
+  ),
+  Item(
+    name: 'Chicken Parmesan',
+    totalPriceCents: 1499,
+    uid: '3',
+    imageProvider: NetworkImage('https://flutter'
+        '.dev/docs/cookbook/img-files/effects/split-check/Food3.jpg'),
+  ),
+];
+//  can be used for playerProfile in MJ
+// <a href="https://levelup.gitconnected.com/flutter-dart-immutable-objects-and-values-5e321c4c654e">gitconnected.com</a> immutable explanation
+/******
+ What is @immutable in Dart?
+Immutable data constructs are those that cannot be mutated (altered) after they've been initialized. The Dart language is full of these. In fact, most basic variable types operate this way. Once created, strings, numbers, and boolean values cannot be mutated.
+
+immutable annotation says that every field inside Person (and its subclasses) must be final. Otherwise, Dart compiler will throw a warning, but not an error.
+
+E. G.
+@immutable
+class Person {
+  final String name;
+  final String surname;
+  final UnmodifiableListView<Person> friends;
+
+// UnmodifiableListView<E> class Null safety. An unmodifiable List view of another List. The source of the elements may be a List or any Iterable with efficient Iterable.
+// UnmodifiableListView is a wrapper (a "view") around the original List
+
+  Person({@required this.name, @required this.surname, @required this.friends});
+}
+********/
+
+@immutable
+class ExampleDragAndDrop extends StatefulWidget {   // defined as stateful widget
+  const ExampleDragAndDrop({Key? key}) : super(key: key);  // ? prevent null keuy value from crashing the app
+
+// if widget is stateless, key is not needed.  Key is useful when widget (mjTile) got moved or removed from the screeb <a href="https://www.youtube.com/watch?v=kn0EOS-ZiIc">yt</a>
+// super is used to call the constructor of the base class. So in your example, the constructor of CardTitle is calling the constructor of StatelessWidget .
+//  The super() constructor allows a subclass constructor to explicitly call the no arguments and parametrized constructor of superclass.
+// super.method, call parent/base method
+// n Dart, super keyword is used to refer immediate parent class object.  It is used to call properties and methods of the superclass. 
+/*** 
+It can be use to access the data members of parent class when both parent and child have member with same name.
+It is use to prevent overriding the parent method.
+It can be used to call parameterized constructor of parent class.
+<a href="https://www.geeksforgeeks.org/dart-super-and-this-keyword/">geeksforgeeks</a>  good examples
+***/
+
+// The annotation @override marks an instance member as overriding a superclass member with the same name.
+// make sure to use the same name(s) and argument(s)
+  @override
+  _ExampleDragAndDropState createState() => _ExampleDragAndDropState();
+}
+
+class _ExampleDragAndDropState extends State<ExampleDragAndDrop>
+    with TickerProviderStateMixin {
+  final List<Customer> _people = [
+    Customer(
+      name: 'Makayla',
+      imageProvider: const NetworkImage('https://flutter'
+          '.dev/docs/cookbook/img-files/effects/split-check/Avatar1.jpg'),
+    ),
+    Customer(
+      name: 'Nathan',
+      imageProvider: const NetworkImage('https://flutter'
+          '.dev/docs/cookbook/img-files/effects/split-check/Avatar2.jpg'),
+    ),
+    Customer(
+      name: 'Emilio',
+      imageProvider: const NetworkImage('https://flutter'
+          '.dev/docs/cookbook/img-files/effects/split-check/Avatar3.jpg'),
+    ),
+  ];
+
+  final GlobalKey _draggableKey = GlobalKey();
+
+  void _itemDroppedOnCustomerCart({
+    required Item item,
+    required Customer customer,
+  }) {
+
+//  We call it inside the State Object class of the StatefulWidget. Calling setState marks the corresponding Widget dirty . When flutter builds the next frame (approx. every 16ms), it renders the Widget according to the latest values of the State Object.Ju
+
+// https://api.dart.dev/stable/2.16.0/dart-core/DateTime/DateTime.fromMillisecondsSinceEpoch.html
+// external DateTime.fromMillisecondsSinceEpoch(int millisecondsSinceEpoch, {bool isUtc = false});  // set to local time
+// sincde epoch - Days Since 1970-01-01
+/*** working with date time
+Use the add and subtract methods with a Duration object to create a DateTime object based on another. For example, to find the date that is sixty days (24 * 60 hours) after today, write:
+
+var now = DateTime.now();
+var sixtyDaysFromNow = now.add(const Duration(days: 60));
+<a href="https://api.flutter.dev/flutter/dart-core/DateTime-class.html">flutter.dev</a>
+*/
+    setState(() {
+      customer.items.add(item);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F7),
+      appBar: _buildAppBar(),
+      body: _buildContent(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      iconTheme: const IconThemeData(color: Color(0xFFF64209)),
+      title: Text(
+        'Order Food',
+        style: Theme.of(context).textTheme.headline4?.copyWith(
+              fontSize: 36,
+              color: const Color(0xFFF64209),
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+      backgroundColor: const Color(0xFFF7F7F7),
+      elevation: 0,
+    );
+  }
+
+  Widget _buildContent() {
+    return Stack(
+      children: [
+        SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: _buildMenuList(),
+              ),
+              _buildPeopleRow(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuList() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: _items.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(
+          height: 12.0,
+        );
+      },
+      itemBuilder: (context, index) {
+        final item = _items[index];
+        return _buildMenuItem(
+          item: item,
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuItem({
+    required Item item,
+  }) {
+    return LongPressDraggable<Item>(
+      data: item,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: DraggingListItem(
+        dragKey: _draggableKey,
+        photoProvider: item.imageProvider,
+      ),
+      child: MenuListItem(
+        name: item.name,
+        price: item.formattedTotalItemPrice,
+        photoProvider: item.imageProvider,
+      ),
+    );
+  }
+
+  Widget _buildPeopleRow() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8.0,
+        vertical: 20.0,
+      ),
+      child: Row(
+        children: _people.map(_buildPersonWithDropZone).toList(),
+      ),
+    );
+  }
+
+  Widget _buildPersonWithDropZone(Customer customer) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 6.0,
+        ),
+        child: DragTarget<Item>(
+          builder: (context, candidateItems, rejectedItems) {
+            return CustomerCart(
+              hasItems: customer.items.isNotEmpty,
+              highlighted: candidateItems.isNotEmpty,
+              customer: customer,
+            );
+          },
+          onAccept: (item) {
+            _itemDroppedOnCustomerCart(
+              item: item,
+              customer: customer,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class CustomerCart extends StatelessWidget {
+  const CustomerCart({
+    Key? key,
+    required this.customer,
+    this.highlighted = false,
+    this.hasItems = false,
+  }) : super(key: key);
+
+  final Customer customer;
+  final bool highlighted;
+  final bool hasItems;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = highlighted ? Colors.white : Colors.black;
+
+    return Transform.scale(
+      scale: highlighted ? 1.075 : 1.0,
+      child: Material(
+        elevation: highlighted ? 8.0 : 4.0,
+        borderRadius: BorderRadius.circular(22.0),
+        color: highlighted ? const Color(0xFFF64209) : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: 24.0,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: SizedBox(
+                  width: 46,
+                  height: 46,
+                  child: Image(
+                    image: customer.imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8.0),
+              Text(
+                customer.name,
+                style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                      color: textColor,
+                      fontWeight:
+                          hasItems ? FontWeight.normal : FontWeight.bold,
+                    ),
+              ),
+              Visibility(
+                visible: hasItems,
+                maintainState: true,
+                maintainAnimation: true,
+                maintainSize: true,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 4.0),
+                    Text(
+                      customer.formattedTotalItemPrice,
+                      style: Theme.of(context).textTheme.caption!.copyWith(
+                            color: textColor,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 4.0),
+                    Text(
+                      '${customer.items.length} item${customer.items.length != 1 ? 's' : ''}',
+                      style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                            color: textColor,
+                            fontSize: 12.0,
+                          ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MenuListItem extends StatelessWidget {
+  const MenuListItem({
+    Key? key,
+    this.name = '',
+    this.price = '',
+    required this.photoProvider,
+    this.isDepressed = false,
+  }) : super(key: key);
+
+  final String name;
+  final String price;
+  final ImageProvider photoProvider;
+  final bool isDepressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 12.0,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.0),
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeInOut,
+                    height: isDepressed ? 115 : 120,
+                    width: isDepressed ? 115 : 120,
+                    child: Image(
+                      image: photoProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 30.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                          fontSize: 18.0,
+                        ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  Text(
+                    price,
+                    style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DraggingListItem extends StatelessWidget {
+  const DraggingListItem({
+    Key? key,
+    required this.dragKey,
+    required this.photoProvider,
+  }) : super(key: key);
+
+  final GlobalKey dragKey;
+  final ImageProvider photoProvider;
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionalTranslation(
+      translation: const Offset(-0.5, -0.5),
+      child: ClipRRect(
+        key: dragKey,
+        borderRadius: BorderRadius.circular(12.0),
+        child: SizedBox(
+          height: 150,
+          width: 150,
+          child: Opacity(
+            opacity: 0.85,
+            child: Image(
+              image: photoProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+// useful in class mjTile {const mjTile ({name, mjId    }) }  // mjID probably not needed
+@immutable
+class Item {
+  const Item({
+    required this.totalPriceCents,
+    required this.name,
+    required this.uid,
+    required this.imageProvider,
+  });
+  final int totalPriceCents;
+  final String name;
+  final String uid;
+  final ImageProvider imageProvider;
+  String get formattedTotalItemPrice =>
+      '\$${(totalPriceCents / 100.0).toStringAsFixed(2)}';
+}
+
+class Customer {
+  Customer({
+    required this.name,
+    required this.imageProvider,
+    List<Item>? items,
+  }) : items = items ?? [];
+
+  final String name;
+  final ImageProvider imageProvider;
+  final List<Item> items;
+
+// reduce - e.g. find the sum, min or max value in a list.  https://www.kindacode.com/article/flutter-dart-reduce-examples/
+/**** 
+reduce can only be used on non-empty collections with functions that returns the same type as the types contained in the collection.
+fold can be used in all cases.
+
+For instance you cannot compute the sum of the length of all strings in a list with reduce. You have to use fold :
+<a href="https://stackoverflow.com/questions/20491777/dart-fold-vs-reduce">stackoverflow</a>
+***/
+
+  String get formattedTotalItemPrice {
+    final totalPriceCents =
+        items.fold<int>(0, (prev, item) => prev + item.totalPriceCents); 
+// fold is like summation - 
+// Fold: Reduces a collection to a single value by iteratively combining each element of the collection with an existing value 
+//  using the provided function
+    return '\$${(totalPriceCents / 100.0).toStringAsFixed(2)}';
+ }
+}
